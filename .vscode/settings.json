@@ -1,0 +1,40 @@
+{
+  // Use a darker theme
+  "workbench.colorTheme": "Default Dark Modern",
+  
+  // Customize colors to make VS Code even darker
+  "workbench.colorCustomizations": {
+    // Editor background - very dark
+    "editor.background": "#0a0a0a",
+    
+    // Sidebar background - very dark
+    "sideBar.background": "#0d0d0d",
+    "sideBarTitle.foreground": "#cccccc",
+    
+    // Activity bar (left side icons) - very dark
+    "activityBar.background": "#0a0a0a",
+    "activityBar.foreground": "#ffffff",
+    
+    // Title bar - very dark
+    "titleBar.activeBackground": "#0a0a0a",
+    "titleBar.inactiveBackground": "#0d0d0d",
+    
+    // Status bar (bottom) - very dark
+    "statusBar.background": "#0a0a0a",
+    "statusBar.noFolderBackground": "#0a0a0a",
+    
+    // Tab bar - very dark
+    "tab.activeBackground": "#0d0d0d",
+    "tab.inactiveBackground": "#0a0a0a",
+    
+    // Panel (terminal, output, etc.) - very dark
+    "panel.background": "#0a0a0a",
+    "panel.border": "#1a1a1a",
+    
+    // Editor widget (dropdown, suggest) - very dark
+    "editorWidget.background": "#0d0d0d",
+    
+    // Terminal - very dark
+    "terminal.background": "#0a0a0a"
+  }
+}

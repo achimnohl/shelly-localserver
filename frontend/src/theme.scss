@@ -1,0 +1,24 @@
+// Import Material theming functions
+@use '@angular/material' as mat;
+
+// Include core styles
+@include mat.core();
+
+// Define a modern, clean theme using Material 3
+$homeserver-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette,
+  ),
+  typography: (
+    brand-family: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    plain-family: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  ),
+  density: (
+    scale: 0,
+  )
+));
+
+// Apply the theme to all components
+@include mat.all-component-themes($homeserver-theme);

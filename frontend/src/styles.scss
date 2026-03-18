@@ -1,0 +1,105 @@
+/* You can add global styles to this file, and also import other style files */
+@use './theme.scss';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+// GitHub-inspired color palette
+:root {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f6f8fa;
+  --color-bg-tertiary: #f0f3f6;
+  --color-border-default: #d0d7de;
+  --color-border-muted: #e5e8eb;
+  --color-text-primary: #24292f;
+  --color-text-secondary: #57606a;
+  --color-text-tertiary: #656d76;
+  --color-accent-primary: #0969da;
+  --color-accent-hover: #0860ca;
+  --color-success: #1a7f37;
+  --color-success-bg: #dafbe1;
+  --color-danger: #d1242f;
+  --color-danger-bg: #ffebe9;
+  --color-warning: #bf8700;
+  --color-warning-bg: #fff8c5;
+  --color-info: #0969da;
+  --color-info-bg: #ddf4ff;
+  --color-offline: #656d76;
+  --color-offline-bg: #eaeef2;
+  --shadow-sm: 0 1px 0 rgba(27, 31, 36, 0.04);
+  --shadow-md: 0 3px 6px rgba(140, 149, 159, 0.15);
+  --shadow-lg: 0 8px 24px rgba(140, 149, 159, 0.2);
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', sans-serif;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Custom material overrides
+.mat-mdc-card {
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border-default);
+  box-shadow: var(--shadow-sm) !important;
+  border-radius: 6px;
+}
+
+.mat-toolbar {
+  background-color: var(--color-bg-primary) !important;
+  color: var(--color-text-primary) !important;
+  border-bottom: 1px solid var(--color-border-default);
+  box-shadow: none !important;
+}
+
+.mat-mdc-raised-button {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  box-shadow: var(--shadow-sm) !important;
+  
+  &:not([disabled]):hover {
+    box-shadow: var(--shadow-md) !important;
+  }
+}
+
+.mat-mdc-button {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+}
+
+.mat-mdc-icon-button {
+  &:hover {
+    background-color: var(--color-bg-tertiary) !important;
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 4px;
+  
+  &:hover {
+    background: var(--color-text-tertiary);
+  }
+}
+

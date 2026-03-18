@@ -1,0 +1,13 @@
+* {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+router-outlet {
+  display: none;
+}

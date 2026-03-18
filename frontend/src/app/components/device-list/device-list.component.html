@@ -1,0 +1,223 @@
+<div class="device-list-container">
+  <mat-toolbar color="primary" class="toolbar">
+    <mat-icon class="toolbar-icon">devices</mat-icon>
+    <span class="toolbar-title">Shelly HomeServer</span>
+    <span class="spacer"></span>
+    <button mat-icon-button (click)="toggleViewMode()" matTooltip="Toggle view mode" class="view-toggle">
+      <mat-icon>{{ viewMode === 'cards' ? 'view_list' : 'view_module' }}</mat-icon>
+    </button>
+    <button mat-raised-button (click)="queryAllPower()" [disabled]="queryingPower || loading || discovering" matTooltip="Query power data from all devices">
+      <mat-icon>{{ queryingPower ? 'sync' : 'bolt' }}</mat-icon>
+      {{ queryingPower ? 'Querying...' : 'Update Power' }}
+    </button>
+    <button mat-raised-button (click)="loadDevices()" [disabled]="loading || discovering">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+    <button mat-raised-button color="accent" (click)="discoverAndSaveDevices()" [disabled]="discovering || loading" class="discover-button">
+      <mat-icon>search</mat-icon>
+      Discover & Add Devices
+    </button>
+  </mat-toolbar>
+
+  <div class="content-container">
+    <div *ngIf="discoveryMessage" class="info-banner">
+      <mat-icon>info</mat-icon>
+      {{ discoveryMessage }}
+    </div>
+
+    <div *ngIf="error" class="error-banner">
+      <mat-icon>error</mat-icon>
+      {{ error }}
+    </div>
+
+    <div *ngIf="discovering" class="discovery-progress">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Scanning network for Shelly devices...</p>
+    </div>
+
+    <div *ngIf="loading && devices.length === 0" class="loading-state">
+      <mat-spinner diameter="60"></mat-spinner>
+      <p>Loading devices...</p>
+    </div>
+
+    <!-- Card View -->
+    <div class="devices-cards" *ngIf="(!loading || devices.length > 0) && viewMode === 'cards'">
+      <div *ngFor="let roomName of roomNames" class="room-section">
+        <h2 class="room-header">
+          <mat-icon>room</mat-icon>
+          {{ roomName }}
+          <span class="device-count">({{ getDevicesForRoom(roomName).length }})</span>
+        </h2>
+        
+        <div class="devices-grid">
+          <mat-card *ngFor="let device of getDevicesForRoom(roomName)" class="device-card" [class.device-card-offline]="!device.online">
+        <mat-card-header>
+          <mat-icon mat-card-avatar [class.online]="device.online" [class.offline]="!device.online">
+            {{ device.online ? 'power' : 'power_off' }}
+          </mat-icon>
+          <mat-card-title>{{ device.name }}</mat-card-title>
+          <mat-card-subtitle>
+            <mat-chip [class.online-chip]="device.online" [class.offline-chip]="!device.online">
+              {{ device.online ? 'Online' : 'Offline' }}
+            </mat-chip>
+            <mat-chip *ngIf="device.metadata?.roomName" class="room-chip">
+              <mat-icon>room</mat-icon>
+              {{ device.metadata?.roomName }}
+            </mat-chip>
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="device-info">
+            <div class="info-row">
+              <mat-icon class="info-icon">router</mat-icon>
+              <span class="info-label">IP:</span>
+              <span class="info-value">{{ device.ip }}</span>
+            </div>
+            <div class="info-row">
+              <mat-icon class="info-icon">category</mat-icon>
+              <span class="info-label">Type:</span>
+              <span class="info-value">{{ device.type }}</span>
+            </div>
+            <div class="info-row" *ngIf="device.metadata?.category">
+              <mat-icon class="info-icon">style</mat-icon>
+              <span class="info-label">Category:</span>
+              <span class="info-value">{{ device.metadata?.category }}</span>
+            </div>
+            <div class="info-row">
+              <mat-icon class="info-icon">memory</mat-icon>
+              <span class="info-label">Model:</span>
+              <span class="info-value">{{ device.model || 'Unknown' }}</span>
+            </div>
+            <div class="info-row">
+              <mat-icon class="info-icon">label</mat-icon>
+              <span class="info-label">Generation:</span>
+              <span class="info-value">{{ device.generation }}</span>
+            </div>
+            <div class="info-row" *ngIf="device.online && getDevicePowerInfo(device) !== 'N/A'">
+              <mat-icon class="info-icon power-icon">bolt</mat-icon>
+              <span class="info-label">Power:</span>
+              <span class="info-value power-value">
+                <strong>{{ getDevicePowerInfo(device) }}</strong>
+                <span *ngIf="getDeviceVoltage(device)" class="power-details">
+                  {{ getDeviceVoltage(device) }}<span *ngIf="getDeviceCurrent(device)"> • {{ getDeviceCurrent(device) }}</span>
+                </span>
+              </span>
+            </div>
+            <div class="info-row" *ngIf="getTotalEnergy(device)">
+              <mat-icon class="info-icon">speed</mat-icon>
+              <span class="info-label">Total Energy:</span>
+              <span class="info-value">{{ getTotalEnergy(device) }}</span>
+            </div>
+            <div class="info-row" *ngIf="device.lastPowerUpdate">
+              <mat-icon class="info-icon">schedule</mat-icon>
+              <span class="info-label">Power Updated:</span>
+              <span class="info-value">{{ getLastPowerUpdate(device) }}</span>
+            </div>
+          </div>
+
+          <div class="device-state" *ngIf="device.online && device.type === 'switch'">
+            <mat-chip-set>
+              <mat-chip [class.state-on]="getSwitchState(device)" [class.state-off]="!getSwitchState(device)">
+                <mat-icon>{{ getSwitchState(device) ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                {{ getSwitchState(device) ? 'ON' : 'OFF' }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="toggleDevice(device)" [disabled]="!device.online" matTooltip="Toggle device on/off" *ngIf="device.type === 'switch'">
+            <mat-icon>power_settings_new</mat-icon>
+            Toggle
+          </button>
+          <button mat-button (click)="refreshStatus(device)" [disabled]="!device.online" matTooltip="Refresh device status">
+            <mat-icon>sync</mat-icon>
+            Refresh
+          </button>
+          <button mat-button (click)="editMetadata(device)" matTooltip="Edit device metadata">
+            <mat-icon>edit</mat-icon>
+            Edit
+          </button>
+          <button mat-button color="warn" (click)="deleteDevice(device)" matTooltip="Delete device">
+            <mat-icon>delete</mat-icon>
+            Delete
+          </button>
+        </mat-card-actions>
+
+        <mat-card-footer>
+          <small>
+            <mat-icon class="footer-icon">schedule</mat-icon>
+            Last seen: {{ device.lastSeen | date:'short' }}
+          </small>
+        </mat-card-footer>
+      </mat-card>
+        </div>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div class="devices-list" *ngIf="(!loading || devices.length > 0) && viewMode === 'list'">
+      <div *ngFor="let roomName of roomNames" class="room-section">
+        <h2 class="room-header">
+          <mat-icon>room</mat-icon>
+          {{ roomName }}
+          <span class="device-count">({{ getDevicesForRoom(roomName).length }})</span>
+        </h2>
+        
+        <div class="room-devices">
+          <div *ngFor="let device of getDevicesForRoom(roomName)" class="device-row" [class.device-offline]="!device.online">
+            <div class="device-main-info">
+              <mat-icon [class.status-online]="device.online" [class.status-offline]="!device.online" class="device-status-icon">
+                {{ device.online ? 'check_circle' : 'cancel' }}
+              </mat-icon>
+              
+              <div class="device-name-type">
+                <span class="device-name">{{ device.name }}</span>
+                <span class="device-type">{{ device.type }} • {{ device.ip }}</span>
+              </div>
+
+              <mat-chip class="device-state-chip" [class.state-on]="getSwitchState(device)" [class.state-off]="!getSwitchState(device)" *ngIf="device.online && device.type === 'switch'">
+                {{ getSwitchState(device) ? 'ON' : 'OFF' }}
+              </mat-chip>
+
+              <div class="device-power" *ngIf="device.online && getDevicePowerInfo(device) !== 'N/A'">
+                <mat-icon class="power-icon">bolt</mat-icon>
+                <span class="power-value">{{ getDevicePowerInfo(device) }}</span>
+                <span class="power-details" *ngIf="getDeviceVoltage(device)">
+                  {{ getDeviceVoltage(device) }}
+                  <span *ngIf="getDeviceCurrent(device)"> • {{ getDeviceCurrent(device) }}</span>
+                </span>
+                <span class="energy-total" *ngIf="getTotalEnergy(device)">
+                  ({{ getTotalEnergy(device) }} total)
+                </span>
+              </div>
+            </div>
+
+            <div class="device-actions">
+              <button mat-icon-button (click)="toggleDevice(device)" [disabled]="!device.online" matTooltip="Toggle on/off" color="primary" *ngIf="device.type === 'switch'">
+                <mat-icon>power_settings_new</mat-icon>
+              </button>
+              <button mat-icon-button (click)="refreshStatus(device)" [disabled]="!device.online" matTooltip="Refresh status">
+                <mat-icon>sync</mat-icon>
+              </button>
+              <button mat-icon-button (click)="editMetadata(device)" matTooltip="Edit metadata">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteDevice(device)" matTooltip="Delete device" color="warn">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && devices.length === 0 && !discovering" class="empty-state">
+      <mat-icon class="empty-icon">devices_other</mat-icon>
+      <h2>No devices found</h2>
+      <p>Click "Discover & Add Devices" to scan your network for Shelly devices</p>
+    </div>
+  </div>
+</div>
